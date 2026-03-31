@@ -1,0 +1,20 @@
+[build]
+  command   = "npm install && npm run build"
+  publish   = "dist"
+
+# ─── ENVIRONMENT VARIABLES ──────────────────────────────────────────
+# After deploying, go to:
+#   Netlify Dashboard → Your Site → Site Configuration → Environment Variables
+# Add the following variable:
+#
+#   Key:   VITE_SCRIPT_URL
+#   Value: [paste your Google Apps Script web app URL here]
+#
+# Then trigger a redeploy. The app will automatically send check-in
+# data to your Google Sheet and allow admin reads from it.
+# ────────────────────────────────────────────────────────────────────
+
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
