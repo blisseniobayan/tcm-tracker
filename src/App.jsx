@@ -136,6 +136,7 @@ function MemberView({ onAdmin }) {
 
   const validate = () => {
     const e = {};
+    if (!f.memberId.trim())  e.memberId  = "Please enter your Member ID.";
     if (!f.name.trim())      e.name      = "Please enter your name.";
     if (!f.did.trim())       e.did       = "Please fill this in.";
     if (!f.completed.trim()) e.completed = "Please fill this in.";
@@ -159,6 +160,7 @@ function MemberView({ onAdmin }) {
     setSub(false);
   };
 
+  /* ── Success screen ── */
   if (step === "done") return (
     <div style={{ minHeight: "100vh", background: BRAND.cream }}>
       <style>{css}</style>
@@ -189,6 +191,7 @@ function MemberView({ onAdmin }) {
     </div>
   );
 
+  /* ── Form screen ── */
   return (
     <div style={{ minHeight: "100vh", background: BRAND.cream, paddingBottom: 52 }}>
       <style>{css}</style>
@@ -213,11 +216,9 @@ function MemberView({ onAdmin }) {
         </div>
 
         <div style={{ marginBottom: 22 }}>
-          <Label>Member ID <span style={{ fontSize: 11, color: "#aaa", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></Label>
+          <Label required>Member ID</Label>
           <Input value={f.memberId} onChange={v => set("memberId", v)} placeholder="e.g. TCM-001" />
-          <p style={{ fontSize: 12, color: "#aaa", marginTop: 6, fontFamily: "'Poppins',sans-serif" }}>
-            Don't have one yet? Leave this blank — it won't stop you submitting.
-          </p>
+          <Err msg={err.memberId} />
         </div>
 
         <div style={{ marginBottom: 22 }}>
@@ -332,6 +333,7 @@ function AdminView({ onBack }) {
     ? (entries.reduce((s, e) => s + Number(e.rating), 0) / entries.length).toFixed(1)
     : "—";
 
+  /* ── Login screen ── */
   if (!authed) return (
     <div style={{ minHeight: "100vh", background: BRAND.cream }}>
       <style>{css}</style>
@@ -361,6 +363,7 @@ function AdminView({ onBack }) {
     </div>
   );
 
+  /* ── Dashboard screen ── */
   return (
     <div style={{ minHeight: "100vh", background: BRAND.cream, paddingBottom: 52 }}>
       <style>{css}</style>
