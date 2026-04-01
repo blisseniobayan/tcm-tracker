@@ -12,8 +12,6 @@ const BRAND = {
 /* ─── Config ────────────────────────────────────────────────────── */
 const ADMIN_PASSWORD = "TCMGlobal2620!";
 
-// In production (Netlify), VITE_SCRIPT_URL is set as an env variable.
-// During Claude preview, falls back to window.storage.
 const SCRIPT_URL =
   typeof import.meta !== "undefined" && import.meta.env
     ? import.meta.env.VITE_SCRIPT_URL || ""
@@ -108,10 +106,8 @@ const Rating = ({ value, onChange }) => {
 /* ─── Data helpers ───────────────────────────────────────────────── */
 async function persistEntry(entry) {
   if (SCRIPT_URL) {
-    // Send to Google Apps Script — body sent as text/plain to avoid CORS preflight
     await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(entry) });
   } else if (typeof window.storage !== "undefined") {
-    // Claude artifact preview fallback
     let all = [];
     try { const r = await window.storage.get("tcm_checkins"); if (r) all = JSON.parse(r.value); } catch (_) {}
     all.push(entry);
@@ -135,7 +131,7 @@ function MemberView({ onAdmin }) {
   const [step, setStep] = useState("form");
   const [sub, setSub]   = useState(false);
   const [err, setErr]   = useState({});
-  const [f, setF]       = useState({ name: "", week: "Week 1", did: "", completed: "", goal: "", rating: 0 });
+  const [f, setF]       = useState({ memberId: "", name: "", week: "Week 1", did: "", completed: "", goal: "", rating: 0 });
   const set = (k, v) => setF(x => ({ ...x, [k]: v }));
 
   const validate = () => {
@@ -163,7 +159,6 @@ function MemberView({ onAdmin }) {
     setSub(false);
   };
 
-  /* ── Success screen ── */
   if (step === "done") return (
     <div style={{ minHeight: "100vh", background: BRAND.cream }}>
       <style>{css}</style>
@@ -181,7 +176,7 @@ function MemberView({ onAdmin }) {
           That's one more week of showing up, {f.name.split(" ")[0]}.<br />
           Keep building. See you next week. 🔴
         </p>
-        <button className="btn" onClick={() => { setF({ name: "", week: "Week 1", did: "", completed: "", goal: "", rating: 0 }); setStep("form"); }}
+        <button className="btn" onClick={() => { setF({ memberId: "", name: "", week: "Week 1", did: "", completed: "", goal: "", rating: 0 }); setStep("form"); }}
           style={{
             marginTop: 32, padding: "13px 32px",
             background: "transparent", border: `2px solid ${BRAND.red}`,
@@ -194,12 +189,10 @@ function MemberView({ onAdmin }) {
     </div>
   );
 
-  /* ── Form screen ── */
   return (
     <div style={{ minHeight: "100vh", background: BRAND.cream, paddingBottom: 52 }}>
       <style>{css}</style>
 
-      {/* Header */}
       <div style={{ textAlign: "center", padding: "32px 24px 0" }}>
         <div style={{ fontSize: 22, marginBottom: 4 }}>🔴</div>
         <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 32, fontWeight: 700, color: BRAND.navy, lineHeight: 1.2 }}>
@@ -213,14 +206,20 @@ function MemberView({ onAdmin }) {
 
       <div style={{ maxWidth: 520, margin: "0 auto", padding: "28px 20px 0" }}>
 
-        {/* Info banner */}
         <div style={{ background: BRAND.navy, borderRadius: 14, padding: "16px 20px", marginBottom: 28 }}>
           <p style={{ color: BRAND.cream, fontFamily: "'Poppins',sans-serif", fontSize: 14, lineHeight: 1.65 }}>
             This is your private weekly check-in. Nobody in TCM sees your answers — only you submit it. Show up for yourself every week.
           </p>
         </div>
 
-        {/* Fields */}
+        <div style={{ marginBottom: 22 }}>
+          <Label>Member ID <span style={{ fontSize: 11, color: "#aaa", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></Label>
+          <Input value={f.memberId} onChange={v => set("memberId", v)} placeholder="e.g. TCM-001" />
+          <p style={{ fontSize: 12, color: "#aaa", marginTop: 6, fontFamily: "'Poppins',sans-serif" }}>
+            Don't have one yet? Leave this blank — it won't stop you submitting.
+          </p>
+        </div>
+
         <div style={{ marginBottom: 22 }}>
           <Label required>Your Full Name</Label>
           <Input value={f.name} onChange={v => set("name", v)} placeholder="e.g. Chisom Adeyemi" />
@@ -287,7 +286,6 @@ function MemberView({ onAdmin }) {
           {sub ? "Submitting…" : "Submit My Check-In 🔴"}
         </button>
 
-        {/* Admin link — black text as requested */}
         <p onClick={onAdmin} style={{
           textAlign: "center", marginTop: 28,
           fontSize: 13, color: "#000",
@@ -334,7 +332,6 @@ function AdminView({ onBack }) {
     ? (entries.reduce((s, e) => s + Number(e.rating), 0) / entries.length).toFixed(1)
     : "—";
 
-  /* ── Login screen ── */
   if (!authed) return (
     <div style={{ minHeight: "100vh", background: BRAND.cream }}>
       <style>{css}</style>
@@ -364,12 +361,10 @@ function AdminView({ onBack }) {
     </div>
   );
 
-  /* ── Dashboard screen ── */
   return (
     <div style={{ minHeight: "100vh", background: BRAND.cream, paddingBottom: 52 }}>
       <style>{css}</style>
 
-      {/* Top bar */}
       <div style={{ background: BRAND.navy, padding: "20px 24px" }}>
         <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
@@ -384,7 +379,6 @@ function AdminView({ onBack }) {
 
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 0" }}>
 
-        {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 28 }}>
           {[
             { label: "Total Check-ins", value: entries.length },
@@ -398,7 +392,6 @@ function AdminView({ onBack }) {
           ))}
         </div>
 
-        {/* Filters */}
         <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
           <input type="text" placeholder="Search by name…" value={fn} onChange={e => setFn(e.target.value)} style={{
             flex: 1, minWidth: 160, padding: "10px 14px",
@@ -435,6 +428,7 @@ function AdminView({ onBack }) {
                 <div>
                   <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 700, color: BRAND.navy }}>{e.name}</h3>
                   <p style={{ fontSize: 12, color: "#aaa", marginTop: 2, fontFamily: "'Poppins',sans-serif" }}>
+                    {e.memberId ? <span style={{ color: BRAND.red, fontWeight: 600 }}>{e.memberId} · </span> : null}
                     {e.week} · {new Date(e.timestamp).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                 </div>
